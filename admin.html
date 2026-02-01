@@ -1,19 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Quiz Admin - Sawal Daalein</title>
+    <title>Quiz Admin - Master Visual Panel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: sans-serif; background: #eef2f3; padding: 15px; }
-        .box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: white; padding: 15px; }
+        .box { background: #1a1a1a; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 25px; border: 1px solid #333; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #333; border-radius: 8px; box-sizing: border-box; background: #262626; color: white; font-size: 14px; }
+        /* Photo URL wale box ko alag chamak di hai */
+        #imgUrl { border: 1px solid #3742fa; background: #1e203d; }
+        button { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
+        button:hover { background: #218838; transform: translateY(-2px); }
+        .bulk-btn { background: #3742fa; }
+        .bulk-btn:hover { background: #2f35cd; }
+        h3 { color: #2ed573; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        p { font-size: 13px; color: #888; margin-bottom: 15px; }
     </style>
 </head>
 <body>
+
     <div class="box">
-        <h3>Naya Sawal Daalein</h3>
-        <input type="text" id="ques" placeholder="Sawal Likhein...">
+        <h3>🖼️ 1. Photo Wala Sawal Daalein</h3>
+        <p>Ek-ek karke sawal aur unki background photo jodein.</p>
+        <input type="text" id="ques" placeholder="Sawal Likhein (Jaise: Hawa Mahal kahan hai?)">
+        
+        <input type="text" id="imgUrl" placeholder="Photo Link (URL) yahan paste karein">
+        
         <input type="text" id="opt1" placeholder="Option 1">
         <input type="text" id="opt2" placeholder="Option 2">
         <input type="text" id="opt3" placeholder="Option 3">
@@ -22,10 +34,18 @@
         <button onclick="addQ()">Add to Database</button>
     </div>
 
+    <div class="box">
+        <h3>📦 2. Bulk Upload (Poora Set)</h3>
+        <p>JSON format mein 10-20 sawal ek sath daalein (Image URL ke sath).</p>
+        <textarea id="bulkData" rows="8" placeholder='[{"q":"Sawal","imageUrl":"link","options":["A","B","C","D"],"correct":0}, ...]'></textarea>
+        <button class="bulk-btn" onclick="addBulk()">Upload Full Set</button>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // Tumhara Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAvYTv5CCqE3-l4koXl-7q_1jQG6JZ-rWQ",
             authDomain: "audi-45680.firebaseapp.com",
@@ -38,15 +58,18 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // Single Question Add karne ka function
         window.addQ = async function() {
             const q = document.getElementById('ques').value;
+            const img = document.getElementById('imgUrl').value;
             const c = parseInt(document.getElementById('correct').value) - 1;
             
-            if(!q || isNaN(c)) { alert("Poora bharein!"); return; }
+            if(!q || isNaN(c)) { alert("Sawal aur Sahi Option zaroori hai!"); return; }
 
             try {
                 await addDoc(collection(db, "Questions"), {
                     q: q,
+                    imageUrl: img, // Photo link database mein ja raha hai
                     options: [
                         document.getElementById('opt1').value,
                         document.getElementById('opt2').value,
@@ -56,9 +79,26 @@
                     correct: c,
                     time: Date.now()
                 });
-                alert("Sawal Database mein chala gaya!");
+                alert("Sawal aur Photo dono set ho gaye!");
                 location.reload();
             } catch (e) { alert("Error: " + e); }
+        }
+
+        // Bulk Upload Function
+        window.addBulk = async function() {
+            const data = document.getElementById('bulkData').value;
+            if(!data) { alert("Pehle JSON data paste karein!"); return; }
+            try {
+                const questionsSet = JSON.parse(data);
+                for(let item of questionsSet) {
+                    await addDoc(collection(db, "Questions"), {
+                        ...item,
+                        time: Date.now()
+                    });
+                }
+                alert("Pura set upload ho gaya!");
+                location.reload();
+            } catch (e) { alert("JSON format mein galti hai!"); }
         }
     </script>
 </body>
