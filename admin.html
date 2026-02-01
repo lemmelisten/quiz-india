@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Admin - Sawal Daalein</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: sans-serif; background: #eef2f3; padding: 15px; }
+        .box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h3>Naya Sawal Daalein</h3>
+        <input type="text" id="ques" placeholder="Sawal Likhein...">
+        <input type="text" id="opt1" placeholder="Option 1">
+        <input type="text" id="opt2" placeholder="Option 2">
+        <input type="text" id="opt3" placeholder="Option 3">
+        <input type="text" id="opt4" placeholder="Option 4">
+        <input type="number" id="correct" placeholder="Sahi Option No. (1-4)">
+        <button onclick="addQ()">Add to Database</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAvYTv5CCqE3-l4koXl-7q_1jQG6JZ-rWQ",
+            authDomain: "audi-45680.firebaseapp.com",
+            projectId: "audi-45680",
+            storageBucket: "audi-45680.firebasestorage.app",
+            messagingSenderId: "739330497540",
+            appId: "1:739330497540:web:e4913add2109dc0c34e951"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.addQ = async function() {
+            const q = document.getElementById('ques').value;
+            const c = parseInt(document.getElementById('correct').value) - 1;
+            
+            if(!q || isNaN(c)) { alert("Poora bharein!"); return; }
+
+            try {
+                await addDoc(collection(db, "Questions"), {
+                    q: q,
+                    options: [
+                        document.getElementById('opt1').value,
+                        document.getElementById('opt2').value,
+                        document.getElementById('opt3').value,
+                        document.getElementById('opt4').value
+                    ],
+                    correct: c,
+                    time: Date.now()
+                });
+                alert("Sawal Database mein chala gaya!");
+                location.reload();
+            } catch (e) { alert("Error: " + e); }
+        }
+    </script>
+</body>
+</html>
