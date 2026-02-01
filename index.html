@@ -1,50 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Quiz Quiz India - Win ₹10</title>
+    <title>Quiz Quiz India - Auto Photo Fix</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #121212; color: white; padding: 20px; }
-        .quiz-card { background: #1e1e1e; padding: 25px; border-radius: 15px; max-width: 400px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .timer { font-size: 45px; color: #ff4757; font-weight: bold; margin-bottom: 15px; }
-        .opt-btn { display: block; width: 100%; padding: 15px; margin: 12px 0; border: none; border-radius: 10px; background: #3742fa; color: white; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
-        .opt-btn:hover { background: #5352ed; transform: scale(1.02); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; text-align: center; 
+            background: #121212 no-repeat center center fixed; 
+            background-size: cover; background-blend-mode: overlay;
+            color: white; padding: 20px; transition: background-image 0.5s ease;
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        }
+        .quiz-card { 
+            background: rgba(30, 30, 30, 0.9); padding: 30px; border-radius: 20px; 
+            max-width: 400px; width: 95%; box-shadow: 0 15px 35px rgba(0,0,0,0.8); 
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .timer { font-size: 50px; color: #ff4757; font-weight: bold; }
+        .opt-btn { display: block; width: 100%; padding: 15px; margin: 12px 0; border: none; border-radius: 12px; background: #3742fa; color: white; cursor: pointer; font-size: 16px; font-weight: bold; }
         .hidden { display: none; }
-        .win-msg { color: #2ed573; font-size: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="login-area" class="quiz-card">
-        <h2>🔥 Quiz Quiz India</h2>
-        <p>Login karke khelna shuru karein</p>
-        <button class="opt-btn" onclick="googleLogin()" style="background: #ffffff; color: #000;">Sign in with Google</button>
-    </div>
-
-    <div id="setup-area" class="quiz-card hidden">
-        <h2 id="welcome-user">Hello!</h2>
-        <p>Rule: Har sawal ke liye sirf 5 second milenge. Sab sahi toh ₹10 milenge!</p>
-        <button class="opt-btn" onclick="startQuiz()">Start Quiz</button>
+    <div id="setup-area" class="quiz-card">
+        <h2>ðŸ”¥ Quiz Quiz India</h2>
+        <p>Auto-Photo Fix Updated! âœ…</p>
+        <button class="opt-btn" onclick="startQuiz()">Start Game</button>
     </div>
 
     <div id="quiz-area" class="quiz-card hidden">
         <div class="timer" id="timer">5</div>
-        <h3 id="question-text">Sawal load ho raha hai...</h3>
+        <h3 id="question-text">Taiyar...</h3>
         <div id="options-box"></div>
-    </div>
-
-    <div id="win-area" class="quiz-card hidden">
-        <div class="win-msg">🏆 Mubarak Ho! Aap Jeet Gaye!</div>
-        <p>Apna UPI ID daalein ₹10 lene ke liye:</p>
-        <input type="text" id="upi-id" placeholder="example@paytm / 9876543210@ybl">
-        <button class="opt-btn" style="background: #2ed573;" onclick="submitWinner()">Submit & Get Reward</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAvYTv5CCqE3-l4koXl-7q_1jQG6JZ-rWQ",
@@ -57,14 +50,179 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
 
         let questions = [];
         let currentIdx = 0;
-        let score = 0;
         let timerInt;
-        let userData = null;
 
-        window.googleLogin = async function() {
+        window.startQuiz = async function() {
             try {
+                const querySnapshot = await getDocs(collection(db, "Questions"));
+                questions = [];
+                querySnapshot.forEach((doc) => questions.push(doc.data()));
+                
+                if(questions.length > 0) {
+                    document.getElementById('setup-area').classList.add('hidden');
+                    document.getElementById('quiz-area').classList.remove('hidden');
+                    showQuestion();
+                } else { alert("Pehle Admin se naye sawal daalein!"); }
+            } catch (e) { alert("Error: " + e); }
+        }
+
+        function showQuestion() {
+            if(currentIdx >= questions.length) { /* Win logic */ return; }
+            let q = questions[currentIdx];
+
+            // --- âœ¨ SMART AUTO-PHOTO FIX âœ¨ ---
+            let finalImg = "";
+            if(q.imageUrl && q.imageUrl.length > 5) {
+                finalImg = q.imageUrl;
+            } else {
+                // Sawal mein se sirf kaam ke words nikalo (Peheli 2 cheezein)
+                let keywords = q.q.replace(/[?.,!]/g, "").split(' ').slice(0, 2).join(',');
+                finalImg = `https://loremflickr.com/1280/720/${keywords},india`;
+            }
+            
+            // Photo apply karna
+            document.body.style.backgroundImage = `url('${finalImg}')`;
+            // ----------------------------------
+
+            document.getElementById('question-text').innerText = q.q;
+            let box = document.getElementById('options-box');
+            box.innerHTML = '';
+            q.options.forEach((opt, i) => {
+                let btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerText = opt;
+                btn.onclick = () => { currentIdx++; showQuestion(); };
+                box.appendChild(btn);
+            });
+            startTimer();
+        }
+
+        function startTimer() {
+            let time = 5;
+            document.getElementById('timer').innerText = time;
+            clearInterval(timerInt);
+            timerInt = setInterval(() => {
+                time--; document.getElementById('timer').innerText = time;
+                if(time <= 0) { clearInterval(timerInt); currentIdx++; showQuestion(); }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Quiz India - Auto Photo Fix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { 
+            font-family: 'Segoe UI', sans-serif; text-align: center; 
+            background: #121212 no-repeat center center fixed; 
+            background-size: cover; background-blend-mode: overlay;
+            color: white; padding: 20px; transition: background-image 0.5s ease;
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        }
+        .quiz-card { 
+            background: rgba(30, 30, 30, 0.9); padding: 30px; border-radius: 20px; 
+            max-width: 400px; width: 95%; box-shadow: 0 15px 35px rgba(0,0,0,0.8); 
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .timer { font-size: 50px; color: #ff4757; font-weight: bold; }
+        .opt-btn { display: block; width: 100%; padding: 15px; margin: 12px 0; border: none; border-radius: 12px; background: #3742fa; color: white; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="setup-area" class="quiz-card">
+        <h2>ðŸ”¥ Quiz Quiz India</h2>
+        <p>Auto-Photo Fix Updated! âœ…</p>
+        <button class="opt-btn" onclick="startQuiz()">Start Game</button>
+    </div>
+
+    <div id="quiz-area" class="quiz-card hidden">
+        <div class="timer" id="timer">5</div>
+        <h3 id="question-text">Taiyar...</h3>
+        <div id="options-box"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAvYTv5CCqE3-l4koXl-7q_1jQG6JZ-rWQ",
+            authDomain: "audi-45680.firebaseapp.com",
+            projectId: "audi-45680",
+            storageBucket: "audi-45680.firebasestorage.app",
+            messagingSenderId: "739330497540",
+            appId: "1:739330497540:web:e4913add2109dc0c34e951"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let questions = [];
+        let currentIdx = 0;
+        let timerInt;
+
+        window.startQuiz = async function() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "Questions"));
+                questions = [];
+                querySnapshot.forEach((doc) => questions.push(doc.data()));
+                
+                if(questions.length > 0) {
+                    document.getElementById('setup-area').classList.add('hidden');
+                    document.getElementById('quiz-area').classList.remove('hidden');
+                    showQuestion();
+                } else { alert("Pehle Admin se naye sawal daalein!"); }
+            } catch (e) { alert("Error: " + e); }
+        }
+
+        function showQuestion() {
+            if(currentIdx >= questions.length) { /* Win logic */ return; }
+            let q = questions[currentIdx];
+
+            // --- âœ¨ SMART AUTO-PHOTO FIX âœ¨ ---
+            let finalImg = "";
+            if(q.imageUrl && q.imageUrl.length > 5) {
+                finalImg = q.imageUrl;
+            } else {
+                // Sawal mein se sirf kaam ke words nikalo (Peheli 2 cheezein)
+                let keywords = q.q.replace(/[?.,!]/g, "").split(' ').slice(0, 2).join(',');
+                finalImg = `https://loremflickr.com/1280/720/${keywords},india`;
+            }
+            
+            // Photo apply karna
+            document.body.style.backgroundImage = `url('${finalImg}')`;
+            // ----------------------------------
+
+            document.getElementById('question-text').innerText = q.q;
+            let box = document.getElementById('options-box');
+            box.innerHTML = '';
+            q.options.forEach((opt, i) => {
+                let btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerText = opt;
+                btn.onclick = () => { currentIdx++; showQuestion(); };
+                box.appendChild(btn);
+            });
+            startTimer();
+        }
+
+        function startTimer() {
+            let time = 5;
+            document.getElementById('timer').innerText = time;
+            clearInterval(timerInt);
+            timerInt = setInterval(() => {
+                time--; document.getElementById('timer').innerText = time;
+                if(time <= 0) { clearInterval(timerInt); currentIdx++; showQuestion(); }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
